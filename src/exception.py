@@ -1,7 +1,7 @@
 import sys
 #the sys module provides various functions and variables that are used to manipulate different parts of the 
 # python runtime environment.It allows you to interact with the interpreter and access system-specific parameters and functions.    
-import logging
+from src.logger import logging
 
 def error_message_detail(error, error_detail: sys):
     _, _, exc_tb = error_detail.exc_info()
