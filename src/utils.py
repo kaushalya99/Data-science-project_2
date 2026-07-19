@@ -7,6 +7,8 @@ import dill
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from src.exception import CustomException
+from sklearn.model_selection import GridSearchCV
+
 
 def save_object(file_path, obj):
     try:
@@ -18,23 +20,28 @@ def save_object(file_path, obj):
     except Exception as e:
         raise CustomException(e, sys)
     
-def evaluate_models(X_train, y_train, X_test, y_test, models):
+def evaluate_models(X_train, y_train, X_test, y_test, models, param):
 
     try:
-         #splitting the data into train and test sets       
         report = {}  #to store the r2 score of each model
 
-        for i in range(len(models)):  #iterating through all the models
-            model = list(models.values())[i]  #getting the model object
+        for model_name, model in models.items():  #iterating through all the models
+            model_params = param.get(model_name, {})  #getting the hyperparameters of the model
+
+            if model_params:
+                gs = GridSearchCV(model, model_params, cv=3)
+                gs.fit(X_train, y_train)
+                model.set_params(**gs.best_params_)
+
             model.fit(X_train, y_train)  #fitting the model on the training data
 
             y_train_pred = model.predict(X_train)  #predicting the target feature of the train dataset
             y_test_pred = model.predict(X_test)  #predicting the target feature of the test dataset
-            
-            train_model_score = r2_score(y_train, y_train_pred)  #calculating the r2 score of the model on the train dataset    
+
+            train_model_score = r2_score(y_train, y_train_pred)  #calculating the r2 score of the model on the train dataset
             test_model_score = r2_score(y_test, y_test_pred)  #calculating the r2 score of the model on the test dataset
 
-            report[list(models.keys())[i]] = test_model_score  #storing the r2 score of the model in the report dictionary
+            report[model_name] = test_model_score  #storing the r2 score of the model in the report dictionary
 
         return report  #returning the report dictionary
 
