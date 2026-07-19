@@ -4,7 +4,8 @@ import sys
 import numpy as np
 import pandas as pd
 import dill
-from skearn.metrics import r2_score
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split
 from src.exception import CustomException
 
 def save_object(file_path, obj):
@@ -20,7 +21,7 @@ def save_object(file_path, obj):
 def evaluate_models(X_train, y_train, X_test, y_test, models):
 
     try:
-        X_train, X_test, y_train, y_test,models = train_test_split(X, y, test_size=0.2, random_state=42)  #splitting the data into train and test sets       
+         #splitting the data into train and test sets       
         report = {}  #to store the r2 score of each model
 
         for i in range(len(models)):  #iterating through all the models

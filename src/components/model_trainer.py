@@ -30,7 +30,7 @@ class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()  #creating object of the class ModelTrainerConfig
 
-    def initiate_model_trainer(self, train_array, test_array,preprocessor_path):        
+    def initiate_model_trainer(self, train_array, test_array):        
         try:
             logging.info("Splitting training and testing input data")
             X_train, y_train, X_test, y_test = (
@@ -66,10 +66,30 @@ class ModelTrainer:
 
                 model_report[list(models.keys())[i]] = test_model_score  #storing the r2 score of each model in the dictionary
 
-            best_model_score = max(sorted(model_report.values()))  #getting the best r2 score from all the models
+                #to get the best model from the dictionary
+                best_model_score = max(sorted(model_report.values()))  
 
-            best_model_name = list(model_report.keys())[
+                #to get the name of the best model from the dictionary
+                best_model_name = list(model_report.keys())[
                 list(model_report.values()).index(best_model_score)
-            ]  #getting the name of the best model
+                ]  
 
-            best_model = models[best_model_name]
+                best_model = models[best_model_name]
+
+                if best_model_score < 0.6:  #if the best model score is less than 0.6, then raise an exception
+                 raise CustomException("No best model found")  #raising an exception
+
+                logging.info(f"Best found model on both training and testing dataset is {best_model_name} with r2 score: {best_model_score}")   
+
+                save_object(
+                    file_path=self.model_trainer_config.trained_model_file_path,  #path where the trained model will be saved
+                    obj=best_model,  #saving the best model
+                )
+
+                predicted=best_model.predict(X_test)  #predicting on the test data using the best model 
+                r2_square=r2_score(y_test,predicted)  #calculating r2 score on test data using the best model
+                return r2_square  #returning the r2 score of the best model on test 
+             
+
+        except Exception as e:
+            raise CustomException(e, sys)
